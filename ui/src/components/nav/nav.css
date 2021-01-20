@@ -1,0 +1,22 @@
+.nav__container {
+  overflow: auto;
+  scroll-behavior: smooth;
+  max-width: 50rem;
+  height: 3rem;
+  line-height: 3rem;
+}
+
+.nav__container {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none;
+}
+.nav__container::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.nav__item {
+  /* flex-basis: 100rem; */
+  flex-grow: 0;
+  flex-shrink: 1;
+  width: 10rem;
+}
