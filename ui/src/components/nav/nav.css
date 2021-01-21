@@ -15,8 +15,9 @@
 }
 
 .nav__item {
-  /* flex-basis: 100rem; */
-  flex-grow: 0;
-  flex-shrink: 1;
-  width: 10rem;
+  grid-template-columns: repeat(2, minmax(2rem, 4rem));
+}
+
+.nav__item .active {
+  background-color: aqua;
 }
