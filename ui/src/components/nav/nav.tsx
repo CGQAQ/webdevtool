@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import "./nav.scss";
+import "./nav.css";
 
 function generateUI(tabs, current, click, closeClick) {
   function isActive(active: boolean) {
