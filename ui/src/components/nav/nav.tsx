@@ -19,13 +19,13 @@ function generateUI(tabs: Tabs, current: number, click, closeClick) {
       key={it.id}
       onClick={(ev) => click(ev, it.id)}
       className={
-        "nav__item grid grid-cols-2 whitespace-nowrap select-none active:bg-blue-300 text-center  px-2 bg-blue-400 shadow-xl cursor-pointer " +
+        "nav__item flex whitespace-nowrap select-none active:bg-blue-300 text-center  px-2 bg-blue-400 shadow-xl cursor-pointer " +
         isActive(current === it.id)
       }
     >
       <div className="justify-self-center">{it.title}</div>
       <div
-        className="justify-self-end  text-red-600 text-lg font-bold self-center"
+        className="justify-self-end px-3 text-red-600 text-lg font-bold self-center"
         onClick={(ev) => closeClick(ev, it.id)}
       >
         X
@@ -80,7 +80,7 @@ function Nav(props: Props) {
         {generateUI(tabs, current, click, closeHandler)}
       </ul>
       <button
-        className="font-bold text-2xl ml-3 px-3 bg-blue-400"
+        className="font-bold text-2xl ml-3 px-6 bg-blue-400"
         onClick={newTab}
       >
         +

@@ -15,7 +15,11 @@
 }
 
 .nav__item {
-  grid-template-columns: repeat(2, minmax(2rem, 4rem));
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: max-content;
+  width: 8rem;
+  justify-content: space-between;
 }
 
 .nav__item .active {
