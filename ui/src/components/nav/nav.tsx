@@ -6,11 +6,14 @@ import React, {
   useState,
 } from "react";
 import "./nav.css";
+import tabSlice, { Tabs } from "../../reducers/tabs";
+import { useDispatch } from "react-redux";
 
-function generateUI(tabs, current, click, closeClick) {
+function generateUI(tabs: Tabs, current: number, click, closeClick) {
   function isActive(active: boolean) {
     return active ? "active" : "";
   }
+
   return tabs.map((it) => (
     <li
       key={it.id}
@@ -20,7 +23,7 @@ function generateUI(tabs, current, click, closeClick) {
         isActive(current === it.id)
       }
     >
-      <div className="justify-self-center">{it.name}</div>
+      <div className="justify-self-center">{it.title}</div>
       <div
         className="justify-self-end  text-red-600 text-lg font-bold self-center"
         onClick={(ev) => closeClick(ev, it.id)}
@@ -31,9 +34,16 @@ function generateUI(tabs, current, click, closeClick) {
   ));
 }
 
-function Nav() {
+interface Props {
+  tabs: Tabs
+}
+
+function Nav(props: Props) {
   const navContainer: RefObject<HTMLUListElement> = useRef(null);
-  const [tabs, setTabs] = useState([{ id: Date.now(), name: "hello" }]);
+  const tabs = props.tabs;
+  const dispatch = useDispatch();
+  const newTabAction = tabSlice.actions.new;
+  const removeTabAction = tabSlice.actions.remove;
   const [current, setCurrent] = useState(tabs[0].id);
 
   function click(ev: MouseEvent<HTMLLIElement>, id: number) {
@@ -43,11 +53,11 @@ function Nav() {
   function closeHandler(ev: MouseEvent, id: number) {
     ev.stopPropagation();
     if (tabs.length <= 1) return;
-    setTabs(tabs.filter((it) => it.id !== id));
+    dispatch(removeTabAction(id));
   }
 
   function newTab() {
-    setTabs([...tabs, { id: Date.now(), name: "new tab" }]);
+    dispatch(newTabAction());
   }
 
   function scrollHelper(ev: WheelEvent<HTMLUListElement>) {

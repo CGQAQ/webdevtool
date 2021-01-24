@@ -1,5 +1,5 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import tabSlice from "./tab";
+import tabSlice from "./tabs";
 
 const rootReducer = combineReducers({
     tabReducer: tabSlice.reducer
