@@ -5,19 +5,24 @@ import React, {
   useRef,
   useState,
 } from "react";
-import "./nav.css";
+import "./style.css";
 import tabSlice, { Tabs } from "../../reducers/tabs";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../reducers";
 
-function useGenerateUI(tabs) {
+function useGenerateUI(tabs: Tabs, current: number) {
   const [isEditing, setIsEditing] = useState(false);
-  const [current, setCurrent] = useState(tabs[0].id);
   const dispatch = useDispatch();
   const renameAction = tabSlice.actions.rename;
   const removeTabAction = tabSlice.actions.remove;
+  const changeCurrentAction = tabSlice.actions.changeCurrent;
 
   function isActive(active: boolean) {
     return active ? "active" : "";
+  }
+
+  function setCurrent(id: number) {
+    dispatch(changeCurrentAction(id));
   }
 
   function closeClick(ev: MouseEvent, id: number) {
@@ -84,13 +89,11 @@ function useGenerateUI(tabs) {
   ));
 }
 
-interface Props {
-  tabs: Tabs
-}
 
-function Nav(props: Props) {
+function Index() {
   const navContainer: RefObject<HTMLUListElement> = useRef(null);
-  const tabs = props.tabs;
+  const tabs = useSelector<RootState>(state => state.tabReducer.tabs) as Tabs;
+  const current = useSelector<RootState>(state => state.tabReducer.current) as number;
   const dispatch = useDispatch();
   const newTabAction = tabSlice.actions.new;
 
@@ -115,7 +118,7 @@ function Nav(props: Props) {
         className="nav__container relative flex gap-1 overflow-scroll"
         ref={navContainer}
       >
-        {useGenerateUI(tabs)}
+        {useGenerateUI(tabs, current)}
       </ul>
       <button
         className="font-bold text-2xl ml-3 px-6 bg-blue-400"
@@ -127,4 +130,4 @@ function Nav(props: Props) {
   );
 }
 
-export default Nav;
+export default Index;

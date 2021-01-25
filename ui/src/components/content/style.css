@@ -1,0 +1,12 @@
+label,select,input {
+    font-size: 1.2rem;
+}
+
+
+input#port {
+    width: 5rem;
+}
+
+input {
+    border: black 1px solid;
+}
