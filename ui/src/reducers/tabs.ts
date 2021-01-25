@@ -47,6 +47,11 @@ const tabSlice = createSlice({
         },
         remove(state, action: PayloadAction<number>) {
           return state.filter(it => it.id !== action.payload);
+        },
+        rename(state, action: PayloadAction<{id: number, title: string}>) {
+          const tab = state.find(it => it.id === action.payload.id);
+          if(tab && tab.title)
+            tab.title = action.payload.title;
         }
     },
 });

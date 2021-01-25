@@ -9,21 +9,71 @@ import "./nav.css";
 import tabSlice, { Tabs } from "../../reducers/tabs";
 import { useDispatch } from "react-redux";
 
-function generateUI(tabs: Tabs, current: number, click, closeClick) {
+function useGenerateUI(tabs) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [current, setCurrent] = useState(tabs[0].id);
+  const dispatch = useDispatch();
+  const renameAction = tabSlice.actions.rename;
+  const removeTabAction = tabSlice.actions.remove;
+
   function isActive(active: boolean) {
     return active ? "active" : "";
+  }
+
+  function closeClick(ev: MouseEvent, id: number) {
+    ev.stopPropagation();
+    if (tabs.length <= 1) return;
+    if (id === current) {
+      const idx = tabs.findIndex(it => it.id === id);
+      let newIdx = 0;
+      if (idx === -1) return;
+      if (idx === 0) newIdx = 1;
+      else newIdx = idx - 1;
+      setCurrent(tabs[newIdx].id);
+    }
+    dispatch(removeTabAction(id));
+  }
+
+  function click(id: number) {
+    setCurrent(id);
+  }
+
+  function doubleClick() {
+    setIsEditing(true);
+  }
+
+  function submitRenaming(id: number, value: string) {
+    if (value.length !== 0) {
+      dispatch(renameAction({ id, title: value }));
+    }
+    setIsEditing(false);
   }
 
   return tabs.map((it) => (
     <li
       key={it.id}
-      onClick={(ev) => click(ev, it.id)}
+      onClick={() => click(it.id)}
       className={
         "nav__item flex whitespace-nowrap select-none active:bg-blue-300 text-center  px-2 bg-blue-400 shadow-xl cursor-pointer " +
         isActive(current === it.id)
       }
     >
-      <div className="justify-self-center">{it.title}</div>
+      {
+        isEditing && it.id === current ?
+          <input className="justify-self-center" defaultValue={it.title} autoFocus
+                 onBlur={(ev) => submitRenaming(it.id, ev.currentTarget.value)}
+                 onKeyPress={(ev) => {
+                   if (ev.key === "Enter") {
+                     submitRenaming(it.id, ev.currentTarget.value);
+                   }
+                 }}
+          />
+          :
+          <div className="justify-self-center"
+               onDoubleClick={() => doubleClick()}
+          >{it.title}</div>
+
+      }
       <div
         className="justify-self-end px-3 text-red-600 text-lg font-bold self-center"
         onClick={(ev) => closeClick(ev, it.id)}
@@ -43,18 +93,6 @@ function Nav(props: Props) {
   const tabs = props.tabs;
   const dispatch = useDispatch();
   const newTabAction = tabSlice.actions.new;
-  const removeTabAction = tabSlice.actions.remove;
-  const [current, setCurrent] = useState(tabs[0].id);
-
-  function click(ev: MouseEvent<HTMLLIElement>, id: number) {
-    setCurrent(id);
-  }
-
-  function closeHandler(ev: MouseEvent, id: number) {
-    ev.stopPropagation();
-    if (tabs.length <= 1) return;
-    dispatch(removeTabAction(id));
-  }
 
   function newTab() {
     dispatch(newTabAction());
@@ -77,7 +115,7 @@ function Nav(props: Props) {
         className="nav__container relative flex gap-1 overflow-scroll"
         ref={navContainer}
       >
-        {generateUI(tabs, current, click, closeHandler)}
+        {useGenerateUI(tabs)}
       </ul>
       <button
         className="font-bold text-2xl ml-3 px-6 bg-blue-400"

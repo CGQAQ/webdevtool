@@ -22,6 +22,6 @@
   justify-content: space-between;
 }
 
-.nav__item .active {
+.active {
   background-color: aqua;
 }
