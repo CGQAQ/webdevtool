@@ -1,0 +1,21 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.cjs",
+  "scripts": {
+    "start": "rollup -c && node dist/index.cjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache 2",
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/preset-typescript": "^7.12.7",
+    "@rollup/plugin-babel": "^5.2.2",
+    "@rollup/plugin-node-resolve": "^11.1.0",
+    "rollup": "^2.38.0"
+  }
+}
