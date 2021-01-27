@@ -65,9 +65,9 @@ function Content() {
       type,
       addr,
       port,
+      headers
     };
     console.log(data);
-    console.log(headers);
   }
 
   function newHeader() {
