@@ -1,9 +1,20 @@
 import * as http from "http";
 import * as websocket from "websocket";
+import { Session } from "./session";
 const WebsocketServer = websocket.server;
 
-const httpServer = http.createServer();
-httpServer.listen(9999);
+const httpServer = http.createServer(
+  (req, res) => {
+    if (!req.headers.upgrade){
+      res.write("Please connect as websocket!");
+      res.end();
+    }
+  }
+);
+httpServer.listen(9999, () => {
+  console.log("server started at port 9999");
+});
+
 
 const websocketServer = new WebsocketServer({
   httpServer: httpServer,
@@ -16,18 +27,11 @@ const websocketServer = new WebsocketServer({
 });
 
 websocketServer.on("request", (request) => {
-  const connection = request.accept('echo-protocol', request.origin);
+  const connection = request.accept(undefined, request.origin);
   console.log((new Date()) + ' Connection accepted.');
-  connection.on('message', function(message) {
-    if (message.type === 'binary') {
-      console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
-      connection.sendBytes(message.binaryData);
-    }
-    else if (message.type === 'utf8') {
-      console.log('Received Message: ' + message.utf8Data);
-      connection.sendUTF(message.utf8Data);
-    }
-  });
+
+  new Session(connection);
+
   connection.on('close', function(reasonCode, description) {
     console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
   });

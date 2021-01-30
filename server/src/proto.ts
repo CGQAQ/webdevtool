@@ -1,8 +1,8 @@
-type ProtoType =
+export type ProtoType =
   | "HTTP"
   | "HTTPS"
   | "WEBSOCKET";
-type SubtypeType =
+export type SubtypeType =
   | "CLIENT"
   | "SERVER";
 
