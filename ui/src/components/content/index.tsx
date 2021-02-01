@@ -13,11 +13,11 @@ const protoList: ProtoType[] = [
 ];
 
 type TypeType =
-  | "CLIENT"
-  | "SERVER";
+  | "CLIENT";
+// | "SERVER";
 const typeList: TypeType[] = [
   "CLIENT",
-  "SERVER",
+  // "SERVER",
 ];
 
 type HeaderType = { id: number, name: string, value: string };
@@ -29,6 +29,7 @@ function Content() {
   const [port, setPort] = useState<number>(80);
   const [btnText, setBtnText] = useState<string>("SEND");
   const [headers, setHeaders] = useState<HeaderType[]>([]);
+  const [body, setBody] = useState<string>("");
 
   function onProtoChange(ev) {
     const proto: ProtoType = ev.target.value;
@@ -53,9 +54,9 @@ function Content() {
       case "CLIENT":
         setBtnText("SEND");
         break;
-      case "SERVER":
-        setBtnText("LISTEN");
-        break;
+      // case "SERVER":
+      //   setBtnText("LISTEN");
+      //   break;
     }
   }
 
@@ -65,7 +66,8 @@ function Content() {
       type,
       addr,
       port,
-      headers
+      headers,
+      body,
     };
     console.log(data);
   }
@@ -104,12 +106,13 @@ function Content() {
         <select name="proto" id="proto" value={proto} onChange={onProtoChange}>
           {protoList.map(it => <option key={it} value={it}>{it}</option>)}
         </select>
-        <label htmlFor="type">Type</label>
-        <select name="type" id="type" value={type} onChange={onTypeChange}>
-          {typeList.map(it => <option key={it} value={it}>{it}</option>)}
-        </select>
+        {/* Don't need for now */}
+        {/*<label htmlFor="type">Type</label>*/}
+        {/*<select name="type" id="type" value={type} onChange={onTypeChange}>*/}
+        {/*  {typeList.map(it => <option key={it} value={it}>{it}</option>)}*/}
+        {/*</select>*/}
         <input type="text" value={addr} onChange={ev => setAddr(ev.target.value)} />
-        <input type="number" id="port" value={port} onChange={ev => setPort(parseInt(ev.target.value))} />
+        {/*<input type="number" id="port" value={port} onChange={ev => setPort(parseInt(ev.target.value))} />*/}
         <button onClick={doIt} className="px-2 font-medium border-2 border-green-200 py-1">{btnText}</button>
       </section>
       <section className="section-header">
@@ -128,6 +131,19 @@ function Content() {
             </React.Fragment>
           ))}
         </div>
+      </section>
+
+      <section id="section-body">
+        <label htmlFor="section-body__text">Body</label>
+        <textarea id="section-body__text" className="w-full border-2" value={body}
+                  onChange={(ev) => setBody(ev.target.value)} />
+      </section>
+
+      <section id="section-response-header">
+
+      </section>
+      <section id="section-response-body">
+
       </section>
     </main>
   );
