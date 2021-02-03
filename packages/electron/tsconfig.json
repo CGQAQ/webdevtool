@@ -8,6 +8,8 @@
     "allowJs": false,
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "strict": true
+    "strict": true,
+    "declaration": true,
+    "sourceMap": true
   }
 }

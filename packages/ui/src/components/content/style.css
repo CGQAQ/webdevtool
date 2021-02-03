@@ -2,6 +2,9 @@ label,select,input {
     font-size: 1.2rem;
 }
 
+html, body {
+    color :white;
+}
 
 input#port {
     width: 5rem;

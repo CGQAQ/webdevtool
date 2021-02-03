@@ -4,11 +4,13 @@
   "description": "",
   "main": "dist/main.js",
   "scripts": {
-    "start": "tsc && electron dist/main.js"
+    "start": "tsc && electron --inspect=55555 dist/main.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/axios": "^0.14.0",
+    "axios": "^0.21.1",
     "electron": "^11.2.1"
   },
   "devDependencies": {
