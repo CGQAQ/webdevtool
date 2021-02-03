@@ -1,15 +1,19 @@
 {
-  "name": "electron-platform",
+  "name": "@webdevtool/electron",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ./src/main.js"
+    "start": "tsc && electron dist/main.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "electron": "^11.2.1"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.6.10",
+    "@types/node": "^14.14.22",
+    "typescript": "^4.1.3"
   }
 }

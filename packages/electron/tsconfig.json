@@ -1,0 +1,13 @@
+{
+  "compileOnSave": true,
+  "include": [
+    "src/**/*.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "dist",
+    "allowJs": false,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true
+  }
+}
