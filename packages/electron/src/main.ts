@@ -1,17 +1,16 @@
 import { app, BrowserWindow, ipcMain } from "electron";
-import axios from "axios";
+import got from "got";
+import { resolve } from "path";
 
 const httpMethodList = [
   "GET",
   "POST",
-  "HEAD",
   "PUT",
+  "PATCH",
+  "HEAD",
   "DELETE",
   "OPTIONS",
-  "PATCH",
-  "PURGE",
-  "LINK",
-  "UNLINK",
+  "TRACE",
 ] as const;
 
 type HTTPMethod = typeof httpMethodList[number];
@@ -32,9 +31,8 @@ interface HTTPPayload {
   ipcMain.handle(
     "http_request",
     async (event: unknown, payload: HTTPPayload, ...args: unknown[]) => {
-      return axios
-        .request({
-          url: payload.addr,
+      return new Promise(async (resolve, _) => {
+        const res = await got(payload.addr, {
           method: payload.method,
           headers: payload.headers.reduce<Record<string, string>>(
             (last: Record<string, string>, cur: Header) => {
@@ -43,14 +41,18 @@ interface HTTPPayload {
             },
             {}
           ),
-          data: payload.body,
-        })
-        .then((it) => ({ ...it, config: undefined, request: undefined }))
-        .catch((reason) => ({
-          ...reason,
-          config: undefined,
-          request: undefined,
-        }));
+          body: payload.body.length === 0 ? undefined : payload.body,
+        });
+        const body = res.body;
+        const headers = res.headers;
+
+        resolve({
+          status: res.statusCode,
+          statusText: res.statusMessage,
+          body,
+          headers,
+        });
+      });
     }
   );
 })();

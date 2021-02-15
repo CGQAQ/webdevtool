@@ -5,9 +5,12 @@ import React, {
 import { v4 as UUID } from "uuid";
 import "./style.css";
 
-const { ipcRenderer } = window.require(
-  "electron"
-);
+import type { ipcRenderer as ipcRendererType } from "electron";
+const {
+  ipcRenderer,
+}: {
+  ipcRenderer: typeof ipcRendererType;
+} = window.require("electron");
 
 type ProtoType = "HTTP" | "WEBSOCKET";
 
@@ -57,7 +60,7 @@ function Content() {
     addr,
     setAddr,
   ] = useState<string>(
-    "http://baidu.com"
+    "http://baidu.com/"
   );
   const [
     port,
@@ -147,20 +150,21 @@ function Content() {
       ipcRenderer
         .invoke("http_request", data)
         .then((res) => {
-          setRStatusCode(res.status);
-          setRStatusText(
-            res.statusText
-          );
+          let r = res.status
+            ? res
+            : res.response;
+          setRStatusCode(r.status);
+          setRStatusText(r.statusText);
           setRHeaders(
             Object.entries(
-              res.headers
+              r.headers
             ).map((it) => ({
               id: UUID(),
               name: it[0],
               value: it[1] as string,
             }))
           );
-          setRBody(res.data);
+          setRBody(r.data);
         })
         .catch((err) => {
           console.log(err);
