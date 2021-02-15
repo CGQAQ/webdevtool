@@ -1,15 +1,26 @@
-label,select,input {
-    font-size: 1.2rem;
+label,
+select,
+input {
+  font-size: 1.2rem;
 }
 
-html, body {
-    color :white;
+html,
+body {
+  background-color: black;
+  color: white;
 }
 
 input#port {
-    width: 5rem;
+  width: 5rem;
 }
 
 input {
-    border: black 1px solid;
+  border: black 1px solid;
+  background-color: black;
+}
+
+select,
+option {
+  border-color: gray;
+  background-color: black;
 }
