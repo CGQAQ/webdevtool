@@ -1,31 +1,18 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import got from "got";
-import { resolve } from "path";
-
-const httpMethodList = [
-  "GET",
-  "POST",
-  "PUT",
-  "PATCH",
-  "HEAD",
-  "DELETE",
-  "OPTIONS",
-  "TRACE",
-] as const;
-
-type HTTPMethod = typeof httpMethodList[number];
-
-interface Header {
-  name: string;
-  value: string;
-}
-
-interface HTTPPayload {
-  addr: string;
-  method: HTTPMethod;
-  headers: Header[];
-  body: string;
-}
+import Websocket from "ws";
+import { v4 as UUID } from "uuid";
+import {
+  Header,
+  HTTPPayload,
+  WSConnectPayload,
+  WSConnectResult,
+  WSSendPayload,
+  WSSendResult,
+  WSResponse,
+  IPCChannels,
+  WSDisconnectPayload,
+} from "@webdevtool/common";
 
 (function () {
   ipcMain.handle(
@@ -53,6 +40,49 @@ interface HTTPPayload {
           headers,
         });
       });
+    }
+  );
+
+  interface WSConnection {
+    id: string; // uuid
+    conn: Websocket; // real connection
+  }
+
+  const wsConnList: WSConnection[] = [];
+
+  ipcMain.handle(IPCChannels.WSConnect, (ev, payload: WSConnectPayload) => {
+    const id = UUID();
+    const conn = new Websocket(payload.addr);
+    wsConnList.push({ id, conn });
+    conn.on("message", (data) => {
+      ev.sender.send(IPCChannels.WSResponse, {
+        id,
+        content: data.toString(),
+      } as WSResponse);
+    });
+    return { id } as WSConnectResult;
+  });
+
+  ipcMain.handle(IPCChannels.WSSend, (ev, payload: WSSendPayload) => {
+    const conn = wsConnList.find((it) => it.id === payload.id);
+    return new Promise((resolve, reject) => {
+      if (conn) {
+        conn.conn.send(payload.content, (err) => {
+          if (err) {
+            reject({ error: err.message, id: conn.id } as WSSendResult);
+          }
+          resolve(undefined);
+        });
+      }
+    });
+  });
+
+  ipcMain.handle(
+    IPCChannels.WSDisconnect,
+    (ev, payload: WSDisconnectPayload) => {
+      const idx = wsConnList.findIndex((it) => it.id === payload.id);
+      wsConnList.splice(idx, 1);
+      return Promise.resolve();
     }
   );
 })();

@@ -4,8 +4,22 @@ import React, {
 } from "react";
 import { v4 as UUID } from "uuid";
 import "./style.css";
+import {
+  HTTPMethod,
+  HTTPPayload,
+  Header,
+  httpMethodList,
+  IPCChannels,
+  WSConnectPayload,
+  WSConnectResult,
+  WSResponse,
+  WSSendPayload,
+  WSSendResult,
+  WSDisconnectPayload,
+} from "@webdevtool/common";
 
 import type { ipcRenderer as ipcRendererType } from "electron";
+import { send } from "process";
 const {
   ipcRenderer,
 }: {
@@ -14,25 +28,16 @@ const {
 
 type ProtoType = "HTTP" | "WEBSOCKET";
 
+interface Message {
+  date: number;
+  type: "send" | "receive";
+  content: string;
+}
+
 const protoList: ProtoType[] = [
   "HTTP",
   "WEBSOCKET",
 ];
-
-const httpMethodList = [
-  "GET",
-  "POST",
-  "HEAD",
-  "PUT",
-  "DELETE",
-  "OPTIONS",
-  "PATCH",
-  "PURGE",
-  "LINK",
-  "UNLINK",
-] as const;
-
-type HTTPMethod = typeof httpMethodList[number];
 
 type TypeType = "CLIENT";
 // | "SERVER";
@@ -42,12 +47,15 @@ const typeList: TypeType[] = [
 ];
 
 type HeaderType = {
-  id: number;
+  id: string;
   name: string;
   value: string;
 };
 
 function Content() {
+  const [id, setId] = useState<
+    string | undefined
+  >(undefined);
   const [
     proto,
     setProto,
@@ -100,6 +108,11 @@ function Content() {
     setRBody,
   ] = useState<string>("");
 
+  const [
+    wsConversation,
+    setWSConversation,
+  ] = useState<Message[]>([]);
+
   function onProtoChange(ev) {
     const proto: ProtoType =
       ev.target.value;
@@ -107,9 +120,15 @@ function Content() {
     switch (proto) {
       case "HTTP":
         setPort(80);
+        setBtnText("Send");
+        setAddr("https://baidu.com");
         break;
       case "WEBSOCKET":
         setPort(80);
+        setBtnText("Connect");
+        setAddr(
+          "ws://echo.websocket.org"
+        );
         break;
     }
   }
@@ -132,8 +151,25 @@ function Content() {
     }
   }
 
+  function onWSResponse(
+    ev,
+    res: WSResponse
+  ) {
+    console.log(wsConversation);
+    console.log(res);
+    setWSConversation([
+      ...wsConversation,
+      {
+        content: res.content,
+        date: Date.now(),
+        type: "receive",
+      },
+    ]);
+    console.log(wsConversation);
+  }
+
   function doIt() {
-    const data = {
+    const data: HTTPPayload = {
       addr,
       method: httpMethod,
       headers,
@@ -144,9 +180,6 @@ function Content() {
     setRHeaders([]);
     setRBody("");
     if (proto === "HTTP") {
-      console.log(
-        "=-----------------------"
-      );
       ipcRenderer
         .invoke("http_request", data)
         .then((res) => {
@@ -164,10 +197,67 @@ function Content() {
               value: it[1] as string,
             }))
           );
-          setRBody(r.data);
+          setRBody(r.body);
         })
         .catch((err) => {
           console.log(err);
+        });
+    } else if (proto === "WEBSOCKET") {
+      // connect to server
+      if (typeof id === "undefined") {
+        ipcRenderer
+          .invoke(
+            IPCChannels.WSConnect,
+            {
+              addr: addr,
+            } as WSConnectPayload
+          )
+          .then(
+            (it: WSConnectResult) => {
+              setBtnText("Disconnect");
+              setId(it.id);
+              ipcRenderer.addListener(
+                IPCChannels.WSResponse,
+                onWSResponse
+              );
+            }
+          );
+      } else {
+        ipcRenderer
+          .invoke(
+            IPCChannels.WSDisconnect,
+            {
+              id,
+            } as WSDisconnectPayload
+          )
+          .then((it) => {
+            setBtnText("Connect");
+            setId(undefined);
+            ipcRenderer.removeListener(
+              IPCChannels.WSResponse,
+              onWSResponse
+            );
+          });
+      }
+    }
+  }
+
+  function sendMSG() {
+    if (id !== undefined) {
+      ipcRenderer
+        .invoke(IPCChannels.WSSend, {
+          id,
+          content: body,
+        } as WSSendPayload)
+        .then(() => {
+          setWSConversation([
+            ...wsConversation,
+            {
+              date: Date.now(),
+              type: "send",
+              content: body,
+            },
+          ]);
         });
     }
   }
@@ -189,7 +279,7 @@ function Content() {
     }
   }
 
-  function removeHeader(id: number) {
+  function removeHeader(id: string) {
     const idx = headers.findIndex(
       (it) => it.id === id
     );
@@ -200,7 +290,7 @@ function Content() {
 
   function changeHeader(
     ev: ChangeEvent<HTMLInputElement>,
-    id: number,
+    id: string,
     name?: string,
     value?: string
   ) {
@@ -298,6 +388,109 @@ function Content() {
           {btnText}
         </button>
       </section>
+      {headerSection(
+        proto,
+        newHeader,
+        headers,
+        changeHeader,
+        removeHeader
+      )}
+      {/* Websocket sends and responses */}
+
+      {conversationSection(
+        proto,
+        wsConversation
+      )}
+
+      <section id="section-body">
+        <label htmlFor="section-body__text">
+          {proto === "HTTP"
+            ? "Body:"
+            : "Message:"}
+        </label>
+        <textarea
+          id="section-body__text"
+          className="w-full border-2 bg-black"
+          value={body}
+          onChange={(ev) =>
+            setBody(ev.target.value)
+          }
+        />
+        {proto === "WEBSOCKET" ? (
+          <button
+            onClick={sendMSG}
+            className="float-right text-2xl border-2 border-solid border-white"
+          >
+            Send
+          </button>
+        ) : undefined}
+      </section>
+
+      {responseSection(
+        proto,
+        rStatusCode,
+        rStatusText,
+        rHeaders,
+        rBody
+      )}
+    </main>
+  );
+}
+
+function conversationSection(
+  proto: ProtoType,
+  conversation: Message[]
+) {
+  if (proto === "WEBSOCKET") {
+    return (
+      <section
+        id="section-conversation"
+        className="flex flex-col"
+      >
+        {conversation.map((it) => {
+          if (it.type === "send") {
+            return (
+              <div
+                key={it.date}
+                className="self-end"
+              >
+                <span>{it.type}</span>
+                <span>
+                  {it.content}
+                </span>
+              </div>
+            );
+          } else if (
+            it.type === "receive"
+          ) {
+            return (
+              <div
+                key={it.date}
+                className="self-start"
+              >
+                <span>{it.type}</span>
+                <span>
+                  {it.content}
+                </span>
+              </div>
+            );
+          }
+        })}
+      </section>
+    );
+  }
+  return undefined;
+}
+
+function headerSection(
+  proto: ProtoType,
+  newHeader,
+  headers,
+  changeHeader,
+  removeHeader
+) {
+  if (proto === "HTTP") {
+    return (
       <section className="section-header">
         <div className="grid grid-cols-3">
           <div>header name</div>
@@ -346,50 +539,55 @@ function Content() {
           ))}
         </div>
       </section>
+    );
+  }
+  return undefined;
+}
 
-      <section id="section-body">
-        <label htmlFor="section-body__text">
-          Body
-        </label>
-        <textarea
-          id="section-body__text"
-          className="w-full border-2"
-          value={body}
-          onChange={(ev) =>
-            setBody(ev.target.value)
-          }
-        />
-      </section>
-
-      <section id="section-response-status">
-        <span>{rStatusCode}</span>:{" "}
-        <span>{rStatusText}</span>
-      </section>
-      <section id="section-response-header">
-        <table>
-          <thead>
-            <tr>
-              <th>name</th>
-              <th>value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rHeaders.map((it) => {
-              return (
-                <tr key={it.id}>
-                  <td>{it.name}</td>
-                  <td>{it.value}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </section>
-      <section id="section-response-body">
-        <div>{rBody}</div>
-      </section>
-    </main>
-  );
+function responseSection(
+  proto: ProtoType,
+  rStatusCode,
+  rStatusText,
+  rHeaders,
+  rBody
+) {
+  if (true || proto === "HTTP") {
+    return (
+      <>
+        <section id="section-response-status">
+          <span>{rStatusCode}</span>:{" "}
+          <span>{rStatusText}</span>
+        </section>
+        <section id="section-response-header">
+          <table>
+            <thead>
+              <tr>
+                <th>name</th>
+                <th>value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rHeaders.map((it) => {
+                return (
+                  <tr key={it.id}>
+                    <td>{it.name}</td>
+                    <td>{it.value}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </section>
+        <section
+          id="section-response-body"
+          className="border-t-2 border-white mt-4 pt-4"
+        >
+          <div>{rBody}</div>
+        </section>
+      </>
+    );
+  }
+  return undefined;
 }
 
 export default Content;

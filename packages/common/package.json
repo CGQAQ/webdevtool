@@ -1,0 +1,30 @@
+{
+  "name": "@webdevtool/common",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "jason <m.jason.liu@outlook.com>",
+  "homepage": "https://github.com/CGQAQ/webdevtool#readme",
+  "license": "Apache-2.0",
+  "main": "dist/types.js",
+  "types": "dist/types.d.ts",
+  "directories": {
+    "dist": "dist",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npm.taobao.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CGQAQ/webdevtool.git"
+  },
+  "scripts": {
+    "start": "tsc"
+  },
+  "bugs": {
+    "url": "https://github.com/CGQAQ/webdevtool/issues"
+  }
+}
