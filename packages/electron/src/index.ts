@@ -95,8 +95,13 @@ function createWindow() {
       nodeIntegration: true,
     },
   });
-  win.loadURL("http://localhost:3000");
-  win.webContents.openDevTools();
+
+  if (process.env.NODE_ENV === "develop") {
+    win.loadURL("http://localhost:3000");
+  } else {
+    win.loadFile("index.html");
+  }
+  // win.webContents.openDevTools();
   win.menuBarVisible = false;
 }
 

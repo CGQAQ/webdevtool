@@ -1,0 +1,23 @@
+appId: "com.cgqaq.webdevtool"
+productName: "webdevtool"
+copyright: "Copyright © year Jason<m.jason.liu@outlook.com"
+files:
+  [
+    { from: "../ui/build/", to: ".", filter: "**/*" },
+    "dist/index.js",
+    "package.json",
+  ]
+
+directories:
+  output: "bin"
+  app: "packages/electron"
+  buildResources: "../ui/build/"
+
+linux:
+  target: AppImage
+  maintainer: CG
+  vendor: CG
+  category: devtool
+
+nsis:
+  oneClick: true

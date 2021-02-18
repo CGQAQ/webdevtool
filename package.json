@@ -14,6 +14,13 @@
   },
   "scripts": {
     "bootstrap": "lerna bootstrap",
+    "build:electron": "electron-builder --config ./packages/electron/electron-builder.yml",
     "start": "lerna run start --ignore server"
+  },
+  "build": {
+    "appId": "com.cgqaq.webdevtool",
+    "mac": {
+      "category": "com.cgqaq.webdevtool"
+    }
   }
 }
