@@ -3,8 +3,9 @@
 ## Technology used
 
 1. Electron
-2. Lerna/Yarn workspace
-3. React & Redux & reduxjs/toolkit
-4. Tailwind css
-5. got(http/https)
-6. ws(websocket)
+2. Typescript
+3. Lerna/Yarn workspace
+4. React & Redux & reduxjs/toolkit
+5. Tailwind css
+6. got(http/https)
+7. ws(websocket)
