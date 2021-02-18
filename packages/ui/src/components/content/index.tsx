@@ -113,6 +113,15 @@ function Content() {
     setWSConversation,
   ] = useState<Message[]>([]);
 
+  function reset() {
+    setBody("");
+    setHeaders([]);
+    setRStatusText("");
+    setRStatusCode("");
+    setRBody("");
+    setRHeaders([]);
+  }
+
   function onProtoChange(ev) {
     const proto: ProtoType =
       ev.target.value;
@@ -122,6 +131,7 @@ function Content() {
         setPort(80);
         setBtnText("Send");
         setAddr("https://baidu.com");
+        reset();
         break;
       case "WEBSOCKET":
         setPort(80);
@@ -129,6 +139,7 @@ function Content() {
         setAddr(
           "ws://echo.websocket.org"
         );
+        reset();
         break;
     }
   }
@@ -157,12 +168,12 @@ function Content() {
   ) {
     console.log(wsConversation);
     console.log(res);
-    setWSConversation([
-      ...wsConversation,
+    setWSConversation((value) => [
+      ...value,
       {
-        content: res.content,
         date: Date.now(),
         type: "receive",
+        content: res.content,
       },
     ]);
     console.log(wsConversation);
@@ -216,7 +227,7 @@ function Content() {
             (it: WSConnectResult) => {
               setBtnText("Disconnect");
               setId(it.id);
-              ipcRenderer.addListener(
+              ipcRenderer.on(
                 IPCChannels.WSResponse,
                 onWSResponse
               );
@@ -233,9 +244,8 @@ function Content() {
           .then((it) => {
             setBtnText("Connect");
             setId(undefined);
-            ipcRenderer.removeListener(
-              IPCChannels.WSResponse,
-              onWSResponse
+            ipcRenderer.removeAllListeners(
+              IPCChannels.WSResponse
             );
           });
       }
@@ -250,8 +260,8 @@ function Content() {
           content: body,
         } as WSSendPayload)
         .then(() => {
-          setWSConversation([
-            ...wsConversation,
+          setWSConversation((value) => [
+            ...value,
             {
               date: Date.now(),
               type: "send",
@@ -452,10 +462,12 @@ function conversationSection(
             return (
               <div
                 key={it.date}
-                className="self-end"
+                className="self-end inline-flex"
               >
-                <span>{it.type}</span>
-                <span>
+                <span className="bg-red-500 px-2 text-xl h-10 inline-grid place-content-center">
+                  {it.type}
+                </span>
+                <span className="bg-gray-600 px-4 h-10 leading-10 text-center inline-block">
                   {it.content}
                 </span>
               </div>
@@ -466,10 +478,12 @@ function conversationSection(
             return (
               <div
                 key={it.date}
-                className="self-start"
+                className="self-start inline-flex"
               >
-                <span>{it.type}</span>
-                <span>
+                <span className="bg-blue-500 px-2 text-xl h-10 inline-grid place-content-center">
+                  {it.type}
+                </span>
+                <span className="bg-gray-600 px-4 h-10 leading-10 text-center inline-block">
                   {it.content}
                 </span>
               </div>
@@ -551,7 +565,7 @@ function responseSection(
   rHeaders,
   rBody
 ) {
-  if (true || proto === "HTTP") {
+  if (proto === "HTTP") {
     return (
       <>
         <section id="section-response-status">
